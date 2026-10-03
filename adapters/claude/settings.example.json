@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "taskfm start || true",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}
