@@ -14,8 +14,8 @@
       }
     } catch (e) { }
   </script>
-  <script type="module" crossorigin src="/taskfm/assets/index-CQVCmWJO.js"></script>
-  <link rel="stylesheet" crossorigin href="/taskfm/assets/index-CSgtUzn7.css">
+  <script type="module" crossorigin src="/taskfm/assets/index-CjYwgVLr.js"></script>
+  <link rel="stylesheet" crossorigin href="/taskfm/assets/index-CXISDJ70.css">
 </head>
 
 <body>
@@ -49,22 +49,24 @@
     </header>
 
     <main>
-      <form id="form" class="form" autocomplete="off">
-        <div class="input-wrap">
-          <label for="task" class="input-label">Describe your task</label>
-          <input id="task" class="input" type="text" placeholder="e.g. fix the flaky websocket reconnect bug" autocomplete="off" spellcheck="false" />
-        </div>
-        <div class="actions">
-          <button type="submit" class="btn btn-primary">
-            <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true">
-              <path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" stroke-width="1.25" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-            Pick vibe
-          </button>
-          <button type="button" class="btn" id="dryRunBtn">Dry run</button>
-          <button type="button" class="btn" id="surpriseBtn">Surprise me</button>
-        </div>
-      </form>
+      <section class="form">
+        <form id="form" autocomplete="off">
+          <div class="input-wrap">
+            <label for="task" class="input-label">Describe your task</label>
+            <input id="task" class="input" type="text" placeholder="e.g. fix the flaky websocket reconnect bug" autocomplete="off" spellcheck="false" />
+          </div>
+          <div class="actions">
+            <button type="submit" class="btn btn-primary">
+              <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" stroke-width="1.25" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              Pick vibe
+            </button>
+            <button type="button" class="btn" id="dryRunBtn">Dry run</button>
+            <button type="button" class="btn" id="surpriseBtn">Surprise me</button>
+          </div>
+        </form>
+      </section>
 
       <section id="result" class="result" hidden>
         <div class="result-grid">
@@ -100,6 +102,45 @@
             Copy shareable link
           </button>
           <span id="copyStatus" class="status"></span>
+        </div>
+      </section>
+
+      <section class="install">
+        <h2 class="section-title">Install the CLI</h2>
+        <p>TaskFM also runs as a CLI and hooks into your coding agent to auto-play the right vibe when you start a new task.</p>
+
+        <div class="code-group">
+          <div class="code-tabs">
+            <button class="code-tab active" data-tab="uv">uv (recommended)</button>
+            <button class="code-tab" data-tab="pipx">pipx</button>
+            <button class="code-tab" data-tab="pip">pip</button>
+          </div>
+          <pre class="code-block active" data-tab-content="uv"><code>uv tool install git+https://github.com/arjunkshah12345-hash/taskfm</code></pre>
+          <pre class="code-block" data-tab-content="pipx"><code>pipx install git+https://github.com/arjunkshah12345-hash/taskfm</code></pre>
+          <pre class="code-block" data-tab-content="pip"><code>python3 -m pip install --user git+https://github.com/arjunkshah12345-hash/taskfm</code></pre>
+        </div>
+
+        <div class="quick-start">
+          <div class="step">
+            <span class="pill">1</span>
+            <code>taskfm doctor</code>
+            <span class="muted">— verify setup</span>
+          </div>
+          <div class="step">
+            <span class="pill">2</span>
+            <code>taskfm start "fix the flaky websocket reconnect bug"</code>
+            <span class="muted">— try it</span>
+          </div>
+        </div>
+
+        <div class="vibe-grid">
+          <div class="vibe-pill"><strong>debug</strong> <span class="muted">deep techno</span></div>
+          <div class="vibe-pill"><strong>ship</strong> <span class="muted">synthwave</span></div>
+          <div class="vibe-pill"><strong>data</strong> <span class="muted">lo-fi jazz</span></div>
+          <div class="vibe-pill"><strong>design</strong> <span class="muted">upbeat indie</span></div>
+          <div class="vibe-pill"><strong>docs</strong> <span class="muted">calm classical</span></div>
+          <div class="vibe-pill"><strong>review</strong> <span class="muted">soft ambient</span></div>
+          <div class="vibe-pill"><strong>focus</strong> <span class="muted">deep focus</span></div>
         </div>
       </section>
 
