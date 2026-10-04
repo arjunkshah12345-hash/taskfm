@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TaskFM — Music that matches the task you're doing</title>
+  <meta name="description" content="TaskFM matches your work to the right vibe. Shareable, client-side, no auth." />
+  <link rel="icon" href="/taskfm/icons.svg" type="image/svg+xml">
+  <script>
+    try {
+      if (localStorage.theme === 'dark' || (!localStorage.theme && matchMedia('(prefers-color-scheme:dark)').matches)) {
+        document.documentElement.classList.add('dark')
+      }
+    } catch (e) { }
+  </script>
+  <script type="module" crossorigin src="/taskfm/assets/index-CQVCmWJO.js"></script>
+  <link rel="stylesheet" crossorigin href="/taskfm/assets/index-CSgtUzn7.css">
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <nav>
+        <a class="brand" href="/taskfm/">
+          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+            <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1" fill="none" />
+            <circle cx="8" cy="8" r="3" fill="currentColor" opacity="0.8" />
+          </svg>
+          taskfm
+        </a>
+        <div class="links">
+          <a href="https://github.com/arjunkshah12345-hash/taskfm" target="_blank" rel="noreferrer">github</a>
+          <a href="https://github.com/arjunkshah12345-hash/taskfm#readme" target="_blank" rel="noreferrer">cli</a>
+          <button class="btn-icon" id="themeToggle" aria-label="Toggle dark mode">
+            <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M3.1 3.1l1 1M11.9 11.9l1 1M12.9 3.1l-1 1M4.1 11.9l-1 1" stroke="currentColor" stroke-width="1" fill="none" stroke-linecap="round" />
+              <circle cx="8" cy="8" r="3.2" stroke="currentColor" stroke-width="1" fill="none" />
+            </svg>
+          </button>
+        </div>
+      </nav>
+      <div class="hero">
+        <h1>Music that matches the task you're doing</h1>
+        <p>
+          TaskFM picks the right vibe for what you're building. Shareable links, client-side, no accounts.
+        </p>
+      </div>
+    </header>
+
+    <main>
+      <form id="form" class="form" autocomplete="off">
+        <div class="input-wrap">
+          <label for="task" class="input-label">Describe your task</label>
+          <input id="task" class="input" type="text" placeholder="e.g. fix the flaky websocket reconnect bug" autocomplete="off" spellcheck="false" />
+        </div>
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">
+            <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" stroke-width="1.25" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            Pick vibe
+          </button>
+          <button type="button" class="btn" id="dryRunBtn">Dry run</button>
+          <button type="button" class="btn" id="surpriseBtn">Surprise me</button>
+        </div>
+      </form>
+
+      <section id="result" class="result" hidden>
+        <div class="result-grid">
+          <div class="vibe-card">
+            <div class="vibe-header">
+              <span class="pill">vibe</span>
+              <strong id="vibeName" class="vibe-name"></strong>
+            </div>
+            <p id="vibeBlurb" class="vibe-blurb"></p>
+            <div class="query muted">query • <span id="query"></span></div>
+          </div>
+
+          <div class="playlist-card">
+            <div class="muted">suggested playlist</div>
+            <a id="playlistLink" href="#" class="playlist-link">
+              <span id="playlistName"></span>
+              <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M6 3h7v7M2 14L13 3" stroke="currentColor" stroke-width="1.25" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </a>
+            <div class="muted small">Opens in Spotify Search</div>
+          </div>
+        </div>
+
+        <div class="share">
+          <button type="button" class="btn" id="shareBtn">
+            <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M5.5 6.5L10.5 4.5M5.5 9.5L10.5 11.5" stroke="currentColor" stroke-width="1" fill="none" stroke-linecap="round" />
+              <circle cx="4" cy="8" r="1.5" stroke="currentColor" stroke-width="1" fill="none" />
+              <circle cx="12" cy="4" r="1.5" stroke="currentColor" stroke-width="1" fill="none" />
+              <circle cx="12" cy="12" r="1.5" stroke="currentColor" stroke-width="1" fill="none" />
+            </svg>
+            Copy shareable link
+          </button>
+          <span id="copyStatus" class="status"></span>
+        </div>
+      </section>
+
+      <div id="hint" class="hint">
+        Try <span class="muted">"debug memory leak"</span>, <span class="muted">"deploy to production"</span>, or <span class="muted">"write the README"</span>
+      </div>
+    </main>
+  </div>
+
+  <footer>
+    <span>© 2026 taskfm</span>
+    <span class="muted">client-side • deterministic • shareable</span>
+  </footer>
+
+</body>
+
+</html>
