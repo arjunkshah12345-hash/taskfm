@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TaskFM — Music that matches the task you're doing</title>
-  <meta name="description" content="TaskFM matches your work to the right vibe. Shareable, client-side, no auth." />
+  <meta name="description" content="TaskFM matches your work to the right vibe. Shareable, client-side, deterministic, no accounts." />
   <link rel="icon" href="/taskfm/icons.svg" type="image/svg+xml">
   <script>
     try {
@@ -14,8 +14,8 @@
       }
     } catch (e) { }
   </script>
-  <script type="module" crossorigin src="/taskfm/assets/index-CjYwgVLr.js"></script>
-  <link rel="stylesheet" crossorigin href="/taskfm/assets/index-CXISDJ70.css">
+  <script type="module" crossorigin src="/taskfm/assets/index-Curpq3f5.js"></script>
+  <link rel="stylesheet" crossorigin href="/taskfm/assets/index-BAbMg1TB.css">
 </head>
 
 <body>
@@ -31,7 +31,7 @@
         </a>
         <div class="links">
           <a href="https://github.com/arjunkshah12345-hash/taskfm" target="_blank" rel="noreferrer">github</a>
-          <a href="https://github.com/arjunkshah12345-hash/taskfm#readme" target="_blank" rel="noreferrer">cli</a>
+          <a href="https://github.com/arjunkshah12345-hash/taskfm#readme" target="_blank" rel="noreferrer">docs</a>
           <button class="btn-icon" id="themeToggle" aria-label="Toggle dark mode">
             <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
               <path d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M3.1 3.1l1 1M11.9 11.9l1 1M12.9 3.1l-1 1M4.1 11.9l-1 1" stroke="currentColor" stroke-width="1" fill="none" stroke-linecap="round" />
@@ -43,7 +43,7 @@
       <div class="hero">
         <h1>Music that matches the task you're doing</h1>
         <p>
-          TaskFM picks the right vibe for what you're building. Shareable links, client-side, no accounts.
+          TaskFM picks the right vibe based on what you're working on. Deterministic, shareable, and fully client-side.
         </p>
       </div>
     </header>
@@ -105,9 +105,86 @@
         </div>
       </section>
 
+      <section class="features">
+        <div class="section-header">
+          <h2>Built to stay out of your way</h2>
+          <p>Deterministic keyword scoring with sensible defaults — no AI guesswork, no accounts, no tracking.</p>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <h3>Deterministic by design</h3>
+            <p>Classification matches the CLI 1:1. When scores tie, earlier vibes win. Below the minimum threshold, your music stays put.</p>
+          </article>
+          <article class="feature-card">
+            <h3>Shareable by default</h3>
+            <p>Every classification has a <code>?task=</code> shareable link. Send a task's vibe to someone else with one click.</p>
+          </article>
+          <article class="feature-card">
+            <h3>Works with agents</h3>
+            <p>Drop in the OpenCode plugin and TaskFM auto-picks the right vibe when you start a new task — zero friction.</p>
+          </article>
+          <article class="feature-card">
+            <h3>Client-side only</h3>
+            <p>Static, fast, and private. No backend, no auth, no telemetry. Runs entirely in your browser.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="vibe-section">
+        <div class="section-header">
+          <h2>The vibes</h2>
+          <p>Seven focused modes that cover most kinds of work. The fallback is always intentional.</p>
+        </div>
+        <div class="vibe-table">
+          <div class="vibe-row header">
+            <div>vibe</div>
+            <div>sounds like</div>
+            <div>fires on</div>
+          </div>
+          <div class="vibe-row">
+            <div><strong>debug</strong></div>
+            <div class="muted">deep/minimal techno</div>
+            <div class="muted">bug, fix, traceback, flaky test, crash, investigate</div>
+          </div>
+          <div class="vibe-row">
+            <div><strong>ship</strong></div>
+            <div class="muted">synthwave / retrowave</div>
+            <div class="muted">deploy, docker, k8s, pipeline, release, terraform</div>
+          </div>
+          <div class="vibe-row">
+            <div><strong>data</strong></div>
+            <div class="muted">lo-fi jazz, chillhop</div>
+            <div class="muted">sql, pandas, dataset, embeddings, chart, analytics</div>
+          </div>
+          <div class="vibe-row">
+            <div><strong>design</strong></div>
+            <div class="muted">upbeat indie</div>
+            <div class="muted">ui, css, layout, palette, landing page, animat*</div>
+          </div>
+          <div class="vibe-row">
+            <div><strong>docs</strong></div>
+            <div class="muted">calm classical</div>
+            <div class="muted">readme, documentation, changelog, article, prose</div>
+          </div>
+          <div class="vibe-row">
+            <div><strong>review</strong></div>
+            <div class="muted">soft ambient</div>
+            <div class="muted">review, diff, audit, walkthrough, security</div>
+          </div>
+          <div class="vibe-row">
+            <div><strong>focus</strong></div>
+            <div class="muted">deep focus / instrumental</div>
+            <div class="muted">implement, refactor, parser, algorithm, build, write</div>
+          </div>
+        </div>
+        <p class="table-note muted">Table order is the tie-break — when scores match, the earlier vibe wins. <strong>focus</strong> is the catch-all at the end.</p>
+      </section>
+
       <section class="install">
-        <h2 class="section-title">Install the CLI</h2>
-        <p>TaskFM also runs as a CLI and hooks into your coding agent to auto-play the right vibe when you start a new task.</p>
+        <div class="section-header">
+          <h2>Install the CLI</h2>
+          <p>Use TaskFM in your terminal or hook it into your coding agent to auto-play the right vibe when you start work.</p>
+        </div>
 
         <div class="code-group">
           <div class="code-tabs">
@@ -131,16 +208,23 @@
             <code>taskfm start "fix the flaky websocket reconnect bug"</code>
             <span class="muted">— try it</span>
           </div>
+          <div class="step">
+            <span class="pill">3</span>
+            <code>taskfm vibe "write the readme"</code>
+            <span class="muted">— preview without playing</span>
+          </div>
         </div>
 
-        <div class="vibe-grid">
-          <div class="vibe-pill"><strong>debug</strong> <span class="muted">deep techno</span></div>
-          <div class="vibe-pill"><strong>ship</strong> <span class="muted">synthwave</span></div>
-          <div class="vibe-pill"><strong>data</strong> <span class="muted">lo-fi jazz</span></div>
-          <div class="vibe-pill"><strong>design</strong> <span class="muted">upbeat indie</span></div>
-          <div class="vibe-pill"><strong>docs</strong> <span class="muted">calm classical</span></div>
-          <div class="vibe-pill"><strong>review</strong> <span class="muted">soft ambient</span></div>
-          <div class="vibe-pill"><strong>focus</strong> <span class="muted">deep focus</span></div>
+        <div class="agent-hooks">
+          <h3>Hook into your agent</h3>
+          <p>TaskFM stays out of the way — same-vibe cooldown prevents restarts, and vague prompts don't change your music.</p>
+          <div class="hook-block">
+            <div class="hook-title">OpenCode (automatic)</div>
+            <pre><code>mkdir -p ~/.config/opencode/plugins
+curl -o ~/.config/opencode/plugins/taskfm.js \
+  https://raw.githubusercontent.com/arjunkshah12345-hash/taskfm/main/adapters/opencode/taskfm.js</code></pre>
+          </div>
+          <p class="small muted">Works with stdin prompts too: <code>echo '{"prompt":"review the PR"}' | taskfm start</code></p>
         </div>
       </section>
 
@@ -151,8 +235,15 @@
   </div>
 
   <footer>
-    <span>© 2026 taskfm</span>
-    <span class="muted">client-side • deterministic • shareable</span>
+    <div class="footer-content">
+      <span>© 2026 taskfm</span>
+      <div class="footer-links">
+        <a href="https://github.com/arjunkshah12345-hash/taskfm" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="https://github.com/arjunkshah12345-hash/taskfm#readme" target="_blank" rel="noreferrer">Documentation</a>
+        <a href="https://hack47-offgrid.devpost.com/" target="_blank" rel="noreferrer">HACK47: OFFGRID</a>
+      </div>
+      <span class="muted">client-side • deterministic • shareable</span>
+    </div>
   </footer>
 
 </body>
