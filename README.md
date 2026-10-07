@@ -22,6 +22,45 @@ taskfm  debug * deep techno focus
         |> Deep Techno Focus
 ```
 
+## Taste-aware stations with Qloo
+
+Out of the box, everyone in the same vibe gets the same search results. Tell taskfm
+a few artists you like and it asks [Qloo's](https://qloo.com) taste graph which
+artists fit **both** your taste and the work in front of you, then plays that
+artist's radio station:
+
+```toml
+# ~/.config/taskfm/config.toml
+[taste]
+artists = ["Bonobo", "Khruangbin", "Nils Frahm"]
+```
+
+```bash
+export QLOO_API_KEY=...        # or TASKFM_TASTE="Bonobo, Khruangbin" for a one-off
+taskfm start "track down the race condition in the job queue"
+```
+
+```
+taskfm  debug * Four Tet radio
+        |> Four Tet Radio
+        via Qloo: techno, because you like Bonobo, Khruangbin, Nils Frahm
+```
+
+How it decides:
+
+1. Your artists become Qloo entities (`/search`).
+2. The task's vibe picks a music genre (debug → techno, ship → synthwave,
+   docs → classical, ...), resolved to a Qloo genre tag (`/v2/tags`).
+3. `/v2/insights` returns artists predicted for a listener with your taste,
+   steered toward that genre. Artists you already listed are skipped.
+4. taskfm searches Spotify for those artists' radio stations, then falls back to
+   the built-in keyword stations.
+
+IDs and recommendations are cached for a week, and every call has a 3-second
+timeout. Without a key, without taste artists, or when Qloo is unreachable, taskfm
+behaves exactly as before. `taskfm start --json` includes a `taste` block naming the
+recommended artists and the seeds behind them.
+
 ## How it works
 
 1. Your agent gets a task — a prompt, a ticket, a message in the session.

@@ -33,6 +33,7 @@ class Config:
     queries: dict[str, list[str]] = field(default_factory=dict)
     playlists: dict[str, str] = field(default_factory=dict)
     keywords: dict[str, str] = field(default_factory=dict)
+    taste: list[str] = field(default_factory=list)
     disabled: bool = False
     path: Path | None = None
     warnings: list[str] = field(default_factory=list)
@@ -59,6 +60,8 @@ class Config:
             cfg.engine = os.environ["TASKFM_ENGINE"]
         if os.environ.get("TASKFM_FALLBACK"):
             cfg.fallback = os.environ["TASKFM_FALLBACK"]
+        if os.environ.get("TASKFM_TASTE"):
+            cfg.taste = [a.strip() for a in os.environ["TASKFM_TASTE"].split(",") if a.strip()]
         return cfg
 
     def _apply(self, data: dict) -> None:
@@ -81,6 +84,12 @@ class Config:
         playlists = data.get("playlists")
         if isinstance(playlists, dict):
             self.playlists.update({str(k): str(v) for k, v in playlists.items()})
+
+        taste = data.get("taste")
+        if isinstance(taste, dict):
+            taste = taste.get("artists")
+        if isinstance(taste, list):
+            self.taste = [str(a).strip() for a in taste if str(a).strip()]
 
         keywords = data.get("keywords")
         if isinstance(keywords, dict):
