@@ -9,7 +9,7 @@ import sys
 import time
 from shutil import which
 
-from taskfm import __version__
+from taskfm import __version__, qloo
 from taskfm.config import Config, State, config_path, state_path
 from taskfm.player import (
     PlayerError,
@@ -153,11 +153,14 @@ def cmd_start(args: argparse.Namespace) -> int:
             )
         return 0
 
+    taste = _taste_for(cfg, vibe.name, args.quiet)
     pinned = cfg.playlists.get(vibe.name)
     if pinned:
         item, query = {"uri": pinned, "name": pinned}, "(pinned)"
     else:
-        item, query = _pick_playlist(queries, state, vibe.name)
+        item, query = _pick_playlist(
+            (qloo.station_queries(taste) if taste else []) + queries, state, vibe.name
+        )
 
     if item is None:
         print(
@@ -177,6 +180,13 @@ def cmd_start(args: argparse.Namespace) -> int:
         "uri": uri,
         "engine": engine,
     }
+    if taste and query in qloo.station_queries(taste):
+        payload["taste"] = {
+            "source": "qloo",
+            "because_you_like": taste.seeds,
+            "genre": taste.genre,
+            "recommended": taste.artists[:5],
+        }
 
     if args.dry_run:
         if args.json:
@@ -203,6 +213,18 @@ def cmd_start(args: argparse.Namespace) -> int:
     return 0
 
 
+def _taste_for(cfg: Config, vibe_name: str, quiet: bool) -> qloo.Recommendation | None:
+    """Qloo's picks for this listener and vibe, or None to use the keyword stations."""
+    if not cfg.taste or not qloo.api_key():
+        return None
+    try:
+        return qloo.recommend(vibe_name, cfg.taste)
+    except qloo.QlooError as exc:
+        if not quiet:
+            print(f"taskfm: {exc} - using built-in stations", file=sys.stderr)
+        return None
+
+
 def _start_lines(payload: dict, *, dry_run: bool) -> list[str]:
     query = _paint(str(payload["query"]), DIM)
     name = _paint(str(payload["name"]), BOLD)
@@ -210,7 +232,15 @@ def _start_lines(payload: dict, *, dry_run: bool) -> list[str]:
     if dry_run:
         head += _paint("  (dry run)", DIM)
         name += _paint("  (would play)", DIM)
-    return [head, INDENT + _paint("|>", GREEN) + " " + name]
+    lines = [head, INDENT + _paint("|>", GREEN) + " " + name]
+    taste = payload.get("taste")
+    if taste:
+        lines.append(
+            INDENT
+            + _paint(f"via Qloo: {taste['genre'] or 'your taste'}, because you like ", DIM)
+            + ", ".join(taste["because_you_like"][:3])
+        )
+    return lines
 
 
 def cmd_vibe(args: argparse.Namespace) -> int:
