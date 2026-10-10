@@ -34,6 +34,8 @@ class Config:
     playlists: dict[str, str] = field(default_factory=dict)
     keywords: dict[str, str] = field(default_factory=dict)
     taste: list[str] = field(default_factory=list)
+    # Optional cross-domain taste: films, shows, books, podcasts you like.
+    taste_extra: dict[str, list[str]] = field(default_factory=dict)
     disabled: bool = False
     path: Path | None = None
     warnings: list[str] = field(default_factory=list)
@@ -87,6 +89,12 @@ class Config:
 
         taste = data.get("taste")
         if isinstance(taste, dict):
+            for kind in ("movies", "tv_shows", "books", "podcasts"):
+                names = taste.get(kind)
+                if isinstance(names, list):
+                    clean = [str(n).strip() for n in names if str(n).strip()]
+                    if clean:
+                        self.taste_extra[kind] = clean
             taste = taste.get("artists")
         if isinstance(taste, list):
             self.taste = [str(a).strip() for a in taste if str(a).strip()]

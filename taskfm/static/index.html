@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>taskfm: your coding agent's DJ, with taste</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%2311151c'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%23c6f36b' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='%23c6f36b'/%3E%3C/svg%3E">
+<style>
+  :root { --bg:#0d1016; --panel:#141922; --panel2:#1a2130; --ink:#e9edf3; --muted:#8c96a8; --line:#252d3b; --acc:#c6f36b; --acc2:#7cc4ff; --warn:#ffb86b; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:radial-gradient(1200px 600px at 80% -10%, #1b2740 0%, transparent 60%), var(--bg); color:var(--ink); font:15px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .wrap { max-width:1100px; margin:0 auto; padding:28px 18px 80px; }
+  header { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; }
+  h1 { margin:0; font:800 34px/1 ui-sans-serif, system-ui; letter-spacing:-.02em; }
+  h1 span { color:var(--acc); }
+  .tag { color:var(--muted); margin:8px 0 0; max-width:620px; }
+  .badge { font:600 12px ui-monospace, SFMono-Regular, Menlo, monospace; padding:5px 10px; border-radius:999px; border:1px solid var(--line); white-space:nowrap; }
+  .badge.live { color:var(--acc); border-color:var(--acc); }
+  .badge.demo { color:var(--warn); border-color:var(--warn); }
+  .grid { display:grid; grid-template-columns: 1fr 1.2fr; gap:16px; margin-top:22px; }
+  @media (max-width: 860px) { .grid { grid-template-columns:1fr; } }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:18px; }
+  .card h2 { margin:0 0 12px; font:700 12px ui-monospace, monospace; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); }
+  label { display:block; font-size:13px; color:var(--muted); margin:10px 0 6px; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; padding:6px; min-height:42px; border:1px solid var(--line); border-radius:10px; background:var(--bg); }
+  .chip { background:var(--panel2); border:1px solid var(--line); border-radius:999px; padding:3px 6px 3px 10px; font-size:13px; display:inline-flex; gap:6px; align-items:center; }
+  .chip button { background:none; border:0; color:var(--muted); cursor:pointer; font-size:14px; padding:0 4px; }
+  .chips input { flex:1; min-width:120px; background:transparent; border:0; color:var(--ink); font:inherit; outline:none; padding:4px; }
+  textarea { width:100%; min-height:178px; resize:vertical; background:var(--bg); color:var(--ink); border:1px solid var(--line); border-radius:10px; padding:10px; font:13px/1.6 ui-monospace, Menlo, monospace; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:12px; }
+  button.go { background:var(--acc); color:#10140a; border:0; border-radius:10px; padding:11px 18px; font:800 15px ui-sans-serif, system-ui; cursor:pointer; }
+  button.go:disabled { opacity:.6; cursor:default; }
+  button.ghost { background:transparent; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:5px 11px; font-size:12px; cursor:pointer; }
+  button.ghost:hover { color:var(--ink); }
+  .hint { color:var(--muted); font-size:12px; }
+  #results { margin-top:22px; display:flex; flex-direction:column; gap:14px; }
+  .step { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:16px; display:grid; grid-template-columns: 34px 1fr; gap:12px; }
+  .num { width:34px; height:34px; border-radius:50%; background:var(--panel2); display:grid; place-items:center; font:700 13px ui-monospace, monospace; color:var(--muted); }
+  .task { font-weight:600; }
+  .vibe { display:inline-block; margin:6px 0 10px; font:700 11px ui-monospace, monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--acc2); }
+  .vibe em { font-style:normal; color:var(--muted); text-transform:none; letter-spacing:0; font-weight:500; }
+  .compare { display:grid; grid-template-columns: 1fr 1.4fr; gap:10px; }
+  @media (max-width: 700px) { .compare { grid-template-columns:1fr; } }
+  .side { border:1px solid var(--line); border-radius:12px; padding:12px; background:var(--bg); }
+  .side.q { border-color:#3f5a24; background:linear-gradient(180deg, #151d10, var(--bg)); }
+  .side h3 { margin:0 0 6px; font:700 11px ui-monospace, monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+  .side.q h3 { color:var(--acc); }
+  .station { font-size:18px; font-weight:800; }
+  .station a { color:inherit; text-decoration:none; border-bottom:1px dashed var(--line); }
+  .station a:hover { border-color:var(--acc); }
+  .why { color:var(--muted); font-size:13px; margin-top:4px; }
+  .why b { color:var(--ink); font-weight:600; }
+  .also { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .also a { font-size:12px; color:var(--ink); text-decoration:none; background:var(--panel2); border:1px solid var(--line); border-radius:999px; padding:2px 9px; }
+  details { margin-top:10px; }
+  summary { cursor:pointer; color:var(--muted); font-size:12px; }
+  pre { margin:8px 0 0; padding:10px; background:#0a0d12; border:1px solid var(--line); border-radius:10px; font:12px/1.5 ui-monospace, Menlo, monospace; color:#b8c4d6; overflow:auto; white-space:pre-wrap; word-break:break-word; }
+  .err { color:var(--warn); font-size:13px; }
+  .foot { margin-top:30px; display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width: 860px) { .foot { grid-template-columns:1fr; } }
+  .foot p { color:var(--muted); font-size:13px; margin:6px 0; }
+  code { font:12px ui-monospace, Menlo, monospace; background:#0a0d12; border:1px solid var(--line); border-radius:6px; padding:1px 5px; }
+  a { color:var(--acc2); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>task<span>fm</span></h1>
+      <p class="tag">Your coding agent's DJ. It reads the task your agent just started, picks the mood of the work, and asks Qloo's taste graph which artists fit <b>your</b> taste in that mood.</p>
+    </div>
+    <span class="badge" id="mode">…</span>
+  </header>
+
+  <div class="grid">
+    <section class="card">
+      <h2>1 · Your taste</h2>
+      <label>Artists you like</label>
+      <div class="chips" data-kind="artists"><input placeholder="type a name, press Enter"></div>
+      <label>Films you like (optional)</label>
+      <div class="chips" data-kind="movies"><input placeholder="e.g. a film you rewatch"></div>
+      <label>TV shows you like (optional)</label>
+      <div class="chips" data-kind="tv_shows"><input placeholder="e.g. a show you binge"></div>
+      <div class="row">
+        <span class="hint">Try:</span>
+        <button class="ghost" data-preset="0">electronic + sci-fi</button>
+        <button class="ghost" data-preset="1">indie + comedy</button>
+        <button class="ghost" data-preset="2">jazz + classic films</button>
+      </div>
+      <p class="hint">Only these public names and a genre go to Qloo. Your task text stays on the taskfm server.</p>
+    </section>
+
+    <section class="card">
+      <h2>2 · Your agent's session</h2>
+      <textarea id="tasks" spellcheck="false"></textarea>
+      <div class="row">
+        <button class="go" id="go">DJ this session</button>
+        <span class="hint">One task per line, up to 8. These are the prompts a coding agent would receive.</span>
+      </div>
+    </section>
+  </div>
+
+  <div id="results"></div>
+
+  <div class="foot">
+    <section class="card">
+      <h2>Use it from your agent</h2>
+      <p>Locally, with Spotify: install the CLI and add one hook. Every prompt you send Claude Code or OpenCode picks the station.</p>
+      <pre>uv tool install git+https://github.com/arjunkshah12345-hash/taskfm
+export QLOO_API_KEY=...   # your Qloo hackathon key
+# ~/.config/taskfm/config.toml
+[taste]
+artists = ["Bonobo", "Khruangbin"]
+movies  = ["Blade Runner 2049"]</pre>
+      <p>Or call this server from any agent hook:</p>
+      <pre id="hookSnippet"></pre>
+    </section>
+    <section class="card">
+      <h2>What this is, and isn't</h2>
+      <p>The vibe comes from taskfm's keyword classifier: no model call, same answer every time. The artists come from Qloo's <code>/v2/insights</code>, seeded with your taste via <code>/search</code> and steered by a genre tag from <code>/v2/tags</code>. Artists you listed, and ones already played this session, are excluded.</p>
+      <p>Qloo results describe aggregate taste affinities. They are a good starting point for music, not a claim about you. Spotify links open a search; playback happens in the local CLI.</p>
+      <p><a href="https://github.com/arjunkshah12345-hash/taskfm">Source on GitHub</a> · MIT</p>
+    </section>
+  </div>
+</div>
+
+<script>
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const PRESETS = [
+  { artists: ["Bonobo", "Khruangbin", "Nils Frahm"], movies: ["Blade Runner 2049"], tv_shows: ["Severance"] },
+  { artists: ["Phoebe Bridgers", "Vampire Weekend", "Mitski"], movies: ["Lady Bird"], tv_shows: ["Abbott Elementary"] },
+  { artists: ["Miles Davis", "Nina Simone", "Bill Evans"], movies: ["Casablanca"], tv_shows: ["Mad Men"] },
+];
+const KIND_LABEL = { artists: "artist", movies: "film", tv_shows: "show", books: "book", podcasts: "podcast" };
+const taste = { artists: [], movies: [], tv_shows: [] };
+
+function renderChips() {
+  document.querySelectorAll(".chips").forEach((box) => {
+    const kind = box.dataset.kind, input = $("input", box);
+    box.querySelectorAll(".chip").forEach((c) => c.remove());
+    taste[kind].forEach((name, i) => {
+      const chip = document.createElement("span");
+      chip.className = "chip";
+      chip.innerHTML = `${esc(name)}<button title="remove">×</button>`;
+      chip.querySelector("button").onclick = () => { taste[kind].splice(i, 1); renderChips(); };
+      box.insertBefore(chip, input);
+    });
+  });
+}
+document.querySelectorAll(".chips").forEach((box) => {
+  const kind = box.dataset.kind, input = $("input", box);
+  box.onclick = () => input.focus();
+  input.addEventListener("keydown", (e) => {
+    if ((e.key === "Enter" || e.key === ",") && input.value.trim()) {
+      e.preventDefault();
+      if (taste[kind].length < 5) taste[kind].push(input.value.trim());
+      input.value = ""; renderChips();
+    } else if (e.key === "Backspace" && !input.value && taste[kind].length) {
+      taste[kind].pop(); renderChips();
+    }
+  });
+  input.addEventListener("blur", () => { if (input.value.trim() && taste[kind].length < 5) { taste[kind].push(input.value.trim()); input.value = ""; renderChips(); } });
+});
+document.querySelectorAll("[data-preset]").forEach((b) => b.onclick = () => {
+  const p = PRESETS[+b.dataset.preset];
+  for (const k of Object.keys(taste)) taste[k] = [...(p[k] || [])];
+  renderChips();
+});
+
+function requestLines(reqs) {
+  return reqs.map((r) => r.cached
+    ? `cached  ${r.cached}`
+    : `${r.method} ${r.path}?` + Object.entries(r.params).map(([k, v]) => `${k}=${v}`).join("&")).join("\n");
+}
+
+function stepHtml(s, i) {
+  if (!s.vibe) return `<div class="step"><div class="num">${i + 1}</div><div><div class="task">${esc(s.task)}</div><div class="why">No clear signal (${esc(s.reason)}), so the music stays as it is.</div></div></div>`;
+  const w = s.without_qloo, q = s.qloo || {};
+  let right;
+  if (q.station) {
+    const because = q.because.map((b) => `<b>${esc(b.name)}</b> (${KIND_LABEL[b.kind] || b.kind})`).join(", ");
+    right = `<h3>With Qloo${q.source === "demo" ? " · demo data" : ""}</h3>
+      <div class="station"><a href="${esc(q.spotify_url)}" target="_blank" rel="noopener">${esc(q.station)}</a></div>
+      <div class="why">${q.genre ? `Steered toward <b>${esc(q.genre)}</b>` : "From your taste alone"}, because you like ${because}.</div>
+      ${q.also.length ? `<div class="also">${q.also.map((a) => `<a href="${esc(a.spotify_url)}" target="_blank" rel="noopener">${esc(a.name)}</a>`).join("")}</div>` : ""}
+      ${q.notes.length ? `<div class="why">${q.notes.map(esc).join(" · ")}</div>` : ""}
+      <details><summary>How Qloo decided (requests, key redacted)</summary><pre>${esc(requestLines(q.requests))}${q.tag_id ? `\n\ngenre tag: ${esc(q.tag_id)}` : ""}</pre></details>`;
+  } else {
+    right = `<h3>With Qloo</h3><div class="err">${esc(q.error || "unavailable")}</div>${q.fallback ? `<div class="why">Falling back to the keyword station.</div>` : ""}`;
+  }
+  return `<div class="step"><div class="num">${i + 1}</div><div>
+    <div class="task">${esc(s.task)}</div>
+    <div class="vibe">${esc(s.vibe)} <em>· ${esc(s.blurb)}${s.matched.length ? " · matched " + s.matched.map(esc).join(", ") : ""}</em></div>
+    <div class="compare">
+      <div class="side"><h3>Without Qloo</h3><div class="station"><a href="${esc(w.spotify_url)}" target="_blank" rel="noopener">${esc(w.station)}</a></div><div class="why">${esc(w.note)}</div></div>
+      <div class="side q">${right}</div>
+    </div></div></div>`;
+}
+
+async function run() {
+  const tasks = $("#tasks").value.split("\n").map((t) => t.trim()).filter(Boolean);
+  if (!tasks.length) return;
+  $("#go").disabled = true; $("#go").textContent = "Picking stations…";
+  try {
+    const r = await fetch("/api/session", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ taste, tasks }) });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || r.statusText);
+    $("#results").innerHTML = j.steps.map(stepHtml).join("");
+    $("#results").scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (e) {
+    $("#results").innerHTML = `<div class="card err">${esc(e.message)}</div>`;
+  } finally {
+    $("#go").disabled = false; $("#go").textContent = "DJ this session";
+  }
+}
+$("#go").onclick = run;
+
+fetch("/api/meta").then((r) => r.json()).then((m) => {
+  const b = $("#mode");
+  b.className = "badge " + (m.qloo === "qloo" ? "live" : "demo");
+  b.textContent = m.qloo === "qloo" ? "Qloo: live" : "Qloo: demo data (no key on this server)";
+  $("#tasks").value = m.samples.join("\n");
+});
+$("#hookSnippet").textContent = `# Claude Code: .claude/settings.json > hooks > UserPromptSubmit
+curl -s -X POST --data-binary @- \\
+  "${location.origin}/api/hook?artists=Bonobo,Khruangbin&movies=Blade%20Runner%202049"`;
+PRESETS[0] && Object.assign(taste, JSON.parse(JSON.stringify(PRESETS[0])));
+renderChips();
+</script>
+</body>
+</html>

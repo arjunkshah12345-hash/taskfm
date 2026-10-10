@@ -105,3 +105,67 @@ def test_taste_from_config_file_and_env(tmp_path, monkeypatch):
     assert Config.load().taste == ["Bonobo", "Khruangbin"]
     monkeypatch.setenv("TASKFM_TASTE", "Four Tet, Caribou")
     assert Config.load().taste == ["Four Tet", "Caribou"]
+
+
+def test_cross_domain_seeds_and_exclusions_go_to_insights():
+    fake = FakeQloo()
+    ARTISTS["blade runner 2049"] = "M-BR2049"
+    try:
+        rec = qloo.recommend(
+            "debug",
+            ["Bonobo"],
+            extra_taste={"movies": ["Blade Runner 2049"], "nonsense": ["x"]},
+            exclude_ids=["A-PLAYED"],
+            opener=fake,
+        )
+    finally:
+        del ARTISTS["blade runner 2049"]
+    searches = [p for path, p, _ in fake.calls if path == "/search"]
+    assert [s["types"] for s in searches] == ["urn:entity:artist", "urn:entity:movie"]
+    insights = [p for path, p, _ in fake.calls if path == "/v2/insights"][0]
+    assert insights["signal.interests.entities"] == "A-BONOBO,M-BR2049"
+    assert insights["filter.exclude.entities"] == "A-BONOBO,M-BR2049,A-PLAYED"
+    assert [s["kind"] for s in rec.seed_entities] == ["artists", "movies"]
+    assert all(
+        "X-Api-Key" not in json.dumps(t) and "k" != t.get("params", {}).get("key")
+        for t in rec.trace
+    )
+
+
+def test_demo_mode_runs_the_pipeline_without_a_key(monkeypatch):
+    monkeypatch.delenv("QLOO_API_KEY")
+    monkeypatch.setenv("QLOO_MODE", "demo")
+    rec = qloo.recommend("ship", ["Bonobo"])
+    assert rec.source == "demo"
+    assert rec.genre == "synthwave" and rec.artists
+    # Demo answers are cached separately from real ones.
+    assert qloo._cache_path("demo").name != qloo._cache_path("qloo").name
+
+
+def test_tag_lookup_falls_back_to_a_broad_search():
+    class OnlyBroadTags(FakeQloo):
+        def __call__(self, request, timeout):
+            url = urllib.parse.urlparse(request.full_url)
+            params = dict(urllib.parse.parse_qsl(url.query))
+            if url.path == "/v2/tags":
+                self.calls.append((url.path, params, None))
+                tags = (
+                    []
+                    if "filter.tag.types" in params
+                    else [
+                        {"tag_id": "urn:tag:keyword:media:techno"},
+                        {"tag_id": "urn:tag:genre:music:techno"},
+                    ]
+                )
+                return io.BytesIO(json.dumps({"results": {"tags": tags}}).encode())
+            return super().__call__(request, timeout)
+
+    assert qloo.resolve_genre_tag("techno", opener=OnlyBroadTags()) == "urn:tag:genre:music:techno"
+
+
+def test_extra_taste_from_config(tmp_path, monkeypatch):
+    cfg_file = tmp_path / "config.toml"
+    cfg_file.write_text('[taste]\nartists = ["Bonobo"]\nmovies = ["Arrival"]\ntv_shows = []\n')
+    monkeypatch.setenv("TASKFM_CONFIG", str(cfg_file))
+    cfg = Config.load()
+    assert cfg.taste == ["Bonobo"] and cfg.taste_extra == {"movies": ["Arrival"]}
