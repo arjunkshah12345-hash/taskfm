@@ -1,7 +1,7 @@
 // Offline support. The app shell is cached on install. The Transformers.js
 // bundle and ONNX Runtime files from the CDN are cached the first time they
 // load. Model weights are cached by Transformers.js itself (Cache API).
-const SHELL = "grasscheck-shell-v2";
+const SHELL = "grasscheck-shell-v3";
 const RUNTIME = "grasscheck-runtime-v2";
 const FILES = ["./", "index.html", "style.css", "app.js", "core.js", "labels.json", "manifest.webmanifest", "icon.svg"];
 // Loaded on the very first visit, before this worker controls the page, so
