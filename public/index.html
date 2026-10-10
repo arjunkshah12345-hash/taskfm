@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Grass Check</title>
+  <meta name="description" content="Proof you went outside. An open vision model checks your photo on your own phone. No server, no account, works with no signal." />
+  <meta name="theme-color" content="#1f3d2b" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Grass Check</h1>
+      <p class="tag">Proof you went outside. Checked on your phone by an open model. Nothing leaves the device.</p>
+    </header>
+
+    <section class="card quest" aria-live="polite">
+      <p class="eyebrow">Today's quest</p>
+      <h2 id="quest-title">Loading quest</h2>
+      <button id="shuffle" class="link" type="button">Give me a different one</button>
+    </section>
+
+    <section class="card">
+      <label class="shoot" id="shoot-label">
+        <input id="photo" type="file" accept="image/*" capture="environment" hidden />
+        <span id="shoot-text">Take a photo outside</span>
+      </label>
+      <p id="model-status" class="status">Getting the model ready</p>
+      <div class="progress" hidden><div id="bar"></div></div>
+    </section>
+
+    <section id="result" class="card result" hidden aria-live="polite">
+      <img id="preview" alt="Your photo" />
+      <div>
+        <h2 id="verdict"></h2>
+        <p id="detail"></p>
+        <p id="put-away" class="put-away"></p>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="row">
+        <h2>Journal</h2>
+        <p class="streak"><span id="streak">0</span> day streak</p>
+      </div>
+      <ol id="journal" class="journal"></ol>
+      <p id="empty" class="muted">Nothing yet. The first entry is waiting outside.</p>
+    </section>
+
+    <footer>
+      <p>Runs <a href="https://huggingface.co/Xenova/clip-vit-base-patch32">CLIP ViT-B/32</a> (open weights) with <a href="https://github.com/huggingface/transformers.js">Transformers.js</a> and ONNX Runtime Web, right in this tab. After the first load it works in airplane mode.</p>
+      <p><a href="https://github.com/arjunkshah12345-hash/grasscheck">Source on GitHub</a></p>
+    </footer>
+  </main>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
