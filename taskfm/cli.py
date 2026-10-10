@@ -182,7 +182,7 @@ def cmd_start(args: argparse.Namespace) -> int:
     }
     if taste and query in qloo.station_queries(taste):
         payload["taste"] = {
-            "source": "qloo",
+            "source": taste.source,
             "because_you_like": taste.seeds,
             "genre": taste.genre,
             "recommended": taste.artists[:5],
@@ -215,10 +215,10 @@ def cmd_start(args: argparse.Namespace) -> int:
 
 def _taste_for(cfg: Config, vibe_name: str, quiet: bool) -> qloo.Recommendation | None:
     """Qloo's picks for this listener and vibe, or None to use the keyword stations."""
-    if not cfg.taste or not qloo.api_key():
+    if not (cfg.taste or cfg.taste_extra) or not (qloo.api_key() or qloo.demo_mode()):
         return None
     try:
-        return qloo.recommend(vibe_name, cfg.taste)
+        return qloo.recommend(vibe_name, cfg.taste, extra_taste=cfg.taste_extra)
     except qloo.QlooError as exc:
         if not quiet:
             print(f"taskfm: {exc} - using built-in stations", file=sys.stderr)
@@ -237,7 +237,11 @@ def _start_lines(payload: dict, *, dry_run: bool) -> list[str]:
     if taste:
         lines.append(
             INDENT
-            + _paint(f"via Qloo: {taste['genre'] or 'your taste'}, because you like ", DIM)
+            + _paint(
+                f"via {'Qloo' if taste['source'] == 'qloo' else 'demo data'}: "
+                f"{taste['genre'] or 'your taste'}, because you like ",
+                DIM,
+            )
             + ", ".join(taste["because_you_like"][:3])
         )
     return lines
@@ -388,6 +392,14 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     return 0 if spogo_bin else 1
 
 
+def cmd_serve(args: argparse.Namespace) -> int:
+    from taskfm import web
+
+    port = args.port or int(os.environ.get("PORT", "8787"))
+    web.serve(args.host, port)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="taskfm",
@@ -424,6 +436,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     doctor = sub.add_parser("doctor", help="check spogo, Spotify and config")
     doctor.set_defaults(func=cmd_doctor)
+
+    serve = sub.add_parser("serve", help="run the taskfm web app and hook API")
+    serve.add_argument("--host", default="127.0.0.1")
+    serve.add_argument("--port", type=int, default=None, help="default: $PORT or 8787")
+    serve.set_defaults(func=cmd_serve)
 
     return parser
 

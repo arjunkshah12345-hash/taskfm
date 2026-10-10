@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 > **Your coding agent's DJ.** taskfm reads the task your agent just started and puts on
-> the matching Spotify station — deep techno for a bug hunt, synthwave for a deploy,
+> the matching Spotify station: deep techno for a bug hunt, synthwave for a deploy,
 > lo-fi jazz for a data dive.
 
 One small Python CLI plus a one-file agent hook. **No API keys, no daemon, no model
@@ -25,14 +25,16 @@ taskfm  debug * deep techno focus
 ## Taste-aware stations with Qloo
 
 Out of the box, everyone in the same vibe gets the same search results. Tell taskfm
-a few artists you like and it asks [Qloo's](https://qloo.com) taste graph which
-artists fit **both** your taste and the work in front of you, then plays that
-artist's radio station:
+what you like (artists, and optionally films, TV shows, books or podcasts) and it asks
+[Qloo's](https://qloo.com) taste graph which artists fit **both** your taste and the
+work in front of you, then plays that artist's radio station:
 
 ```toml
 # ~/.config/taskfm/config.toml
 [taste]
-artists = ["Bonobo", "Khruangbin", "Nils Frahm"]
+artists  = ["Bonobo", "Khruangbin", "Nils Frahm"]
+movies   = ["Blade Runner 2049"]     # optional
+tv_shows = ["Severance"]             # optional
 ```
 
 ```bash
@@ -41,29 +43,67 @@ taskfm start "track down the race condition in the job queue"
 ```
 
 ```
-taskfm  debug * Four Tet radio
-        |> Four Tet Radio
+taskfm  debug * <artist> radio
+        |> <Artist> Radio
         via Qloo: techno, because you like Bonobo, Khruangbin, Nils Frahm
 ```
 
 How it decides:
 
-1. Your artists become Qloo entities (`/search`).
+1. Each name you list becomes a Qloo entity (`/search`, with `types` set to artist,
+   movie, TV show, book or podcast). A film or a show is a real taste signal: Qloo's
+   graph connects them to music.
 2. The task's vibe picks a music genre (debug → techno, ship → synthwave,
    docs → classical, ...), resolved to a Qloo genre tag (`/v2/tags`).
-3. `/v2/insights` returns artists predicted for a listener with your taste,
-   steered toward that genre. Artists you already listed are skipped.
+3. `/v2/insights` (`filter.type=urn:entity:artist`) returns artists predicted for that
+   taste (`signal.interests.entities`), steered toward the genre
+   (`signal.interests.tags`). Your own seeds and anything already played are excluded
+   (`filter.exclude.entities`).
 4. taskfm searches Spotify for those artists' radio stations, then falls back to
    the built-in keyword stations.
 
-IDs and recommendations are cached for a week, and every call has a 3-second
-timeout. Without a key, without taste artists, or when Qloo is unreachable, taskfm
-behaves exactly as before. `taskfm start --json` includes a `taste` block naming the
-recommended artists and the seeds behind them.
+Only public cultural names and a genre go to Qloo; the task text never does. IDs and
+recommendations are cached for a week, and every call has a 3-second timeout. Without
+a key, without taste, or when Qloo is unreachable, taskfm behaves exactly as before.
+`taskfm start --json` includes a `taste` block naming the recommended artists and the
+seeds behind them.
+
+`QLOO_MODE=demo` runs the same pipeline against a small hand-written sample table, so
+you can try the flow without a key. Demo results are labelled "demo data" everywhere;
+they are not Qloo output.
+
+## The web app
+
+`taskfm serve` runs a hosted, try-it-in-the-browser version of the same pipeline:
+
+```bash
+taskfm serve --host 0.0.0.0 --port 8787     # or $PORT
+```
+
+- **Session view.** Enter your taste and a few agent prompts. For every prompt it
+  shows the vibe, the station *without* Qloo (the same for everyone) next to the
+  station *with* Qloo, the seeds behind it, more artists that fit, and the exact
+  requests Qloo received (key redacted). Within one session, an artist is never
+  picked twice.
+- **Hook API.** `POST /api/hook?artists=...&movies=...` takes the same JSON a Claude
+  Code `UserPromptSubmit` hook sends and returns the station, so a hosted agent can
+  use taskfm without installing anything.
+- `GET /healthz` reports whether the server is on live Qloo or demo data.
+
+The Qloo key stays on the server (`QLOO_API_KEY`); without it the app runs on demo
+data and says so in the header. Requests are rate limited per IP
+(`TASKFM_RATE_LIMIT`, default 30 a minute).
+
+### Deploy on Render
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/arjunkshah12345-hash/taskfm)
+
+`render.yaml` defines a free Python web service. Render asks for `QLOO_API_KEY` when
+you create it; leave it blank for demo mode.
 
 ## How it works
 
-1. Your agent gets a task — a prompt, a ticket, a message in the session.
+1. Your agent gets a task: a prompt, a ticket, a message in the session.
 2. `taskfm` scores the text against every vibe. Concrete nouns and phrases count double
    (`css`, `readme`, `stack trace`), generic verbs count once (`fix`, `write`, `build`),
    and the highest score wins. No network, no LLM: the answer is instant and identical
@@ -75,7 +115,7 @@ recommended artists and the seeds behind them.
 
 | | |
 |---|---|
-| **Spotify** | A **Premium** account — free accounts can't be controlled this way |
+| **Spotify** | A **Premium** account; free accounts can't be controlled this way |
 | **spogo** | The Spotify CLI: `brew install steipete/tap/spogo` |
 | **Python** | 3.11 or newer |
 | **Spotify app** | On macOS, the desktop app (taskfm plays through it) |
@@ -148,7 +188,7 @@ taskfm status                                          # now playing + last vibe
 taskfm doctor                                          # setup check
 ```
 
-Prompts also come from **stdin**, including agent hook payloads — this is what makes the
+Prompts also come from **stdin**, including agent hook payloads. This is what makes the
 adapters below one-liners:
 
 ```bash
@@ -158,7 +198,7 @@ echo '{"prompt":"review the payments pull request"}' | taskfm start
 Machine-readable output: add `--json` to `start`, `vibe`, or `status` for a single JSON
 line on stdout.
 
-Human output is suppressed whenever stdout isn't a terminal — that is what keeps agent
+Human output is suppressed whenever stdout isn't a terminal. That is what keeps agent
 hooks clean. Set `TASKFM_FORCE_STDOUT=1` to print anyway (e.g. `taskfm start ... | tee
 log`), or `--json`, which always prints.
 
@@ -187,7 +227,7 @@ Table order is the tie-break: when two vibes score the same, the earlier one win
 
 ## Configuration
 
-`~/.config/taskfm/config.toml` — every key is optional, the defaults just work:
+`~/.config/taskfm/config.toml`. Every key is optional, the defaults just work:
 
 ```toml
 engine = "auto"          # auto | applescript | web | connect
@@ -211,10 +251,10 @@ Environment variables: `TASKFM_DISABLE`, `TASKFM_ENGINE`, `TASKFM_CONFIG`,
 
 ## Hook up your agent
 
-Pick **one** — the CLI is identical either way. Installing two is harmless: the
+Pick **one**. The CLI is identical either way. Installing two is harmless: the
 same-vibe cooldown absorbs the duplicate call.
 
-### OpenCode — automatic
+### OpenCode (automatic)
 
 ```bash
 mkdir -p ~/.config/opencode/plugins
@@ -227,7 +267,7 @@ curl -o ~/.config/opencode/plugins/taskfm.js \
 Every user message in a session is classified and played. Opt out with
 `TASKFM_DISABLE=1`; point at a custom binary with `TASKFM_BIN`.
 
-### Claude Code — automatic
+### Claude Code (automatic)
 
 Add to `.claude/settings.json` (or `~/.claude/settings.json`):
 
@@ -244,7 +284,7 @@ Add to `.claude/settings.json` (or `~/.claude/settings.json`):
 Claude Code pipes the prompt as JSON on stdin; `taskfm start` reads it, classifies it,
 and stays silent on stdout so nothing pollutes your context.
 
-### Any other agent — on demand
+### Any other agent (on demand)
 
 ```bash
 mkdir -p ~/.agents/skills/taskfm
@@ -261,11 +301,11 @@ Works anywhere a `SKILL.md` is read (OpenCode, Claude Code, Cursor-compatible ag
 |---------|-----|
 | `taskfm: spogo not found on PATH` | `brew install steipete/tap/spogo`, then restart your shell |
 | `taskfm: no Spotify playlist found` | Spotify search needs a session: `spogo auth import --browser chrome` |
-| `auth` shows `no sp_dc` but search works | Expected on a fresh machine — playback uses the local app anyway |
+| `auth` shows `no sp_dc` but search works | Expected on a fresh machine; playback uses the local app anyway |
 | `the Spotify app is not available` | Install the Spotify desktop app, or set `engine = "auto"` for Connect |
 | Playback starts on the wrong device | `spogo device list` then `spogo device set "<name>"` |
 | `429` / rate-limit errors | Too many web calls; wait a moment, the macOS app engine avoids them |
-| Nothing happens on my prompt | Correct — the prompt scored below `min_score`. Use `taskfm start --force` or set `fallback = "focus"` |
+| Nothing happens on my prompt | Correct: the prompt scored below `min_score`. Use `taskfm start --force` or set `fallback = "focus"` |
 | Music keeps changing mid-task | That's the hook working. `TASKFM_DISABLE=1`, or raise `window_seconds` |
 
 ## Development
@@ -279,7 +319,7 @@ uv run ruff check .          # lint
 uv run ruff format --check . # format
 ```
 
-The classifier is the whole product — `taskfm/vibes.py` plus `tests/test_vibes.py`.
+The classifier is the whole product: `taskfm/vibes.py` plus `tests/test_vibes.py`.
 Playback (`taskfm/player.py`) shells out to `spogo`; nothing else is talked to.
 
 ## Uninstall
@@ -291,4 +331,4 @@ uv tool uninstall taskfm
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).

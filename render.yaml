@@ -1,0 +1,18 @@
+# Render Blueprint: the taskfm web app (taskfm serve).
+# Without QLOO_API_KEY it runs on labelled demo data.
+services:
+  - type: web
+    name: taskfm
+    runtime: python
+    plan: free
+    buildCommand: pip install .
+    startCommand: taskfm serve --host 0.0.0.0 --port $PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      # Qloo hackathon key (works only against https://hackathon.api.qloo.com).
+      - key: QLOO_API_KEY
+        sync: false
+      - key: TASKFM_RATE_LIMIT
+        value: "30"
